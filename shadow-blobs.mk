@@ -41,9 +41,11 @@ PRODUCT_COPY_FILES += \
 	$(device_path)/prebuilt/etc/location.cfg:system/etc/location.cfg \
 	$(device_path)/prebuilt/etc/media_codecs.xml:system/etc/media_codecs.xml \
 	$(device_path)/prebuilt/etc/audio_policy.conf:system/etc/audio_policy.conf \
-	$(device_path)/prebuilt/etc/apns-conf.xml:system/etc/apns-conf.xml
+	$(device_path)/prebuilt/etc/apns-conf.xml:system/etc/apns-conf.xml \
+	$(device_path)/tinyhw/tiny_hw.xml:system/etc/tiny_hw.xml
 
 # WLAN/WPAN firmware
+TARGET_USE_KERNEL_BACKPORTS := false
 ifeq ($(TARGET_USE_KERNEL_BACKPORTS),true)
 PRODUCT_COPY_FILES += \
     $(device_path)/prebuilt/etc/firmware/ti-connectivity/wl127x-fw-5-mr.bin:system/etc/firmware/ti-connectivity/wl127x-fw-5-mr.bin \

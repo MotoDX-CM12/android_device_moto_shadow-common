@@ -59,7 +59,7 @@
 /dev/hp3a-omap            0660   media      camera
 /dev/hplens-omap          0660   media      camera
 /dev/video0               0664   media      camera
-/dev/video1               0664   media      graphics
+/dev/video1               0664   media      camera
 /dev/video2               0664   system     graphics
 /dev/video3               0664   media      camera
 /dev/smodule              0664   root       root
@@ -95,9 +95,9 @@
 /dev/airc                 0660   compass    compass
 /dev/kxtf9                0660   compass    compass
 /dev/sfh7743              0660   compass    compass
-/dev/ttyS0                0640   radio      radio
+/dev/ttyO0                0640   radio      radio
 # bluetooth uart
-/dev/ttyS1                0660   bluetooth  bluetooth
+/dev/ttyO1                0660   bluetooth  bluetooth
 /dev/ttyUSB0              0660   radio      system
 /dev/ttyUSB1              0660   radio      radio
 /dev/ttyUSB2              0660   radio      radio
@@ -110,6 +110,8 @@
 /dev/hci_tty              0666   bluetooth  bluetooth
 
 /dev/graphics/fb0         0660   media      graphics
+/dev/dsscomp              0666   system     system
+/dev/ion                  0666   system     system
 
 # sysfs properties
 /sys/devices/virtual/input/input*   enable      0660  root   input

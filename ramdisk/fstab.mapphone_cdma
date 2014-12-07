@@ -9,8 +9,11 @@
 /dev/block/mmcblk1p5                             /data      ext4 noatime,nosuid,nodev,barrier=1,data=ordered,noauto_da_alloc wait,check
 /dev/block/mmcblk1p6                             /pds       ext3 rw,barrier=1
 
-/devices/platform/mmci-omap-hs.0/mmc_host/mmc0   auto       vfat defaults voldmanaged=sdcard0:auto,noemulatedsd
-/devices/platform/musb_hdrc/usb2                 auto       vfat defaults voldmanaged=usbdisk:auto
+/devices/platform/omap/omap_hsmmc.0/mmc_host/mmc1  auto     vfat defaults voldmanaged=sdcard0:auto
+/devices/platform/musb_hdrc/usb2                   auto     vfat defaults voldmanaged=usbdisk:auto
+
+/dev/block/fake                                  /boot      emmc defaults defaults
+/dev/block/fake 	                         /recovery  emmc defaults defaults
 
 # zRAM
 /dev/block/zram0         none                     swap	    defaults	zramsize=134217728

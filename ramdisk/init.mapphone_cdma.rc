@@ -35,6 +35,10 @@ on init
     symlink /storage/usbdisk /usbdisk
     symlink /storage/usbdisk /mnt/usbdisk
 
+    chmod 755 /f2fscheck.sh
+    chmod 755 /sbin/bbx
+    exec  /f2fscheck.sh
+
 on fs
 
     setprop ro.crypto.fuse_sdcard true
@@ -68,6 +72,11 @@ on post-fs
     symlink /dev /dev/netmux
     symlink /dev/ttyGS0 /dev/acm0
     symlink /dev/hp3a-omap /dev/hp3A-omap
+    symlink /dev/video1 /dev/video3
+    symlink /dev/ttyO0 /dev/ttyS0
+    symlink /dev/ttyO1 /dev/ttyS1
+    symlink /dev/ttyO2 /dev/ttyS2
+    symlink /dev/ttyO3 /dev/ttyS3
 
     mount rootfs rootfs / rw remount
 
@@ -83,13 +92,13 @@ on post-fs
 
 # Configure kernel options
     # Disable automatic power control for OHCI USB IPC Temporarily
-    write /sys/devices/platform/ohci.0/usb1/1-3/power/level auto
+    write /sys/devices/platform/omap/usbls_omap/ohci.0/usb1/1-3/power/level auto
     # Enable automatic power control for EHCI USB IPC
-    write /sys/devices/platform/musb_hdrc/usb2/power/level auto
-    write /sys/devices/platform/musb_hdrc/usb2/power/autosuspend 0
-    # Power Management
-    write /sys/power/sr_vdd1_autocomp 1
-    write /sys/power/sr_vdd2_autocomp 1
+    write /sys/devices/platform/omap/usbhs_omap/musb_hdrc/usb2/power/level auto
+    write /sys/devices/platform/omap/usbhs_omap/musb_hdrc/usb2/power/autosuspend 0
+    # Disable a system-wide task dump on OOM in default
+    write /proc/sys/fs/suid_dumpable 2
+
     # Disable green led
     write /sys/class/leds/green/brightness 0
 
@@ -103,6 +112,9 @@ on post-fs
     chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
     chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
     chmod 0660 /sys/class/rfkill/rfkill0/state
+
+# Permissions for setting the DSP Frequency
+    chown media root /sys/power/dsp_freq
 
 # following two dirs are for storing BP Flex and PDS files. NVM Daemon is using these folders
     mkdir /data/bp_nvm
@@ -124,11 +136,12 @@ on post-fs
     # DSS - disable tearing elimination
     write /sys/devices/omapdss/display0/tear_elim 0  
     # GPU to 266mhz
-    # write /proc/gpu/max_rate 266666666
-    # zRAM only read one page at a time
+    write /sys/devices/platform/omap/pvrsrvkm.0/sgx_fck_rate 266666666
+    # zRAAM only read one page at a time
     write /proc/sys/vm/page-cluster 0
     # Set min free memory to 10240
     write /proc/sys/vm/min_free_kbytes 10240
+
 on post-fs-data
 
     mount rootfs rootfs / ro remount
@@ -340,7 +353,7 @@ service pvrsrvctl /system/bin/pvrsrvctl --start --no-module
     group root
     oneshot
 
-service baseimage /system/bin/dspexec -T /system/lib/dsp/baseimage.dof
+service baseimage /system/bin/cexec.out /system/lib/dsp/baseimage.dof
     class main
     user media
     group media graphics

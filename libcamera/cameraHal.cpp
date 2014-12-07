@@ -233,10 +233,8 @@ static void Yuv422iToYV12 (unsigned char* dest, unsigned char* src, int width, i
            looks good enough and the speed-up of the conversion
            is significant enough to justify such simplification.
         */
-//Fix camera colors. Picked from mielstone2 repo.
-            *udest++ = src[3];
-            *vdest++ = src[1];
-//
+            *udest++ = src[1];
+            *vdest++ = src[3];
             src += 4;
         }
         src += doubleWidth;
@@ -357,7 +355,7 @@ static void dataCallback(int32_t msgType, const sp<IMemory>& dataPtr, void* user
 {
     struct legacy_camera_device *lcdev = (struct legacy_camera_device *) user;
 
-    ALOGV("CameraHAL_DataCb: msg_type:%d user:%p\n", msg_type, user);
+    // ALOGV("CameraHAL_DataCb: msg_type:%d user:%p\n", msg_type, user);
 
     if (lcdev->data_callback != NULL && lcdev->request_memory != NULL) {
         if (lcdev->clientData != NULL) {
@@ -874,7 +872,7 @@ camera_module_t HAL_MODULE_INFO_SYM = {
         version_major: 1,
         version_minor: 1,
         id: CAMERA_HARDWARE_MODULE_ID,
-        name: "Mapphone Camera HAL for CM11",
+        name: "Mapphone Camera HAL for CM12",
         author: "Won-Kyu Park, Raviprasad V Mummidi, Ivan Zupan, Epsylon3, rondoval",
         methods: &camera_module_methods,
         dso: NULL,

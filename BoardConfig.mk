@@ -43,8 +43,8 @@ TARGET_CPU_VARIANT := cortex-a8
 TARGET_ARCH_VARIANT_FPU := neon
 TARGET_OMAP3 := true
 ARCH_ARM_HAVE_TLS_REGISTER := true
-COMMON_GLOBAL_CFLAGS += -DTARGET_OMAP3 -DOMAP_COMPAT -DBINDER_COMPAT -DUSES_AUDIO_LEGACY
-COMMON_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
+COMMON_GLOBAL_CFLAGS += -DOMAP_ENHANCEMENT -DTARGET_OMAP3
+COMMON_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS -DBINDER_COMPAT
 TARGET_GLOBAL_CFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
 TARGET_GLOBAL_CPPFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
 
@@ -54,6 +54,24 @@ TARGET_ARCH_LOWMEM := true
 TARGET_ARCH_HAVE_NEON := true
 
 TARGET_USE_KERNEL_BACKPORTS      := false
+TARGET_SPECIFIC_HEADER_PATH := device/moto/shadow-common/include
+
+# Enable dex-preoptimization to speed up first boot sequence
+WITH_DEXPREOPT := true
+
+#Fake sizes
+TARGET_USERIMAGES_USE_EXT4 := true
+BOARD_BOOTIMAGE_PARTITION_SIZE := 16777216
+BOARD_RECOVERYIMAGE_PARTITION_SIZE := 16793600
+BOARD_SYSTEMIMAGE_PARTITION_SIZE := 2147483648
+BOARD_OEMIMAGE_PARTITION_SIZE := 67108864
+BOARD_USERDATAIMAGE_PARTITION_SIZE := 25253773312
+BOARD_CACHEIMAGE_PARTITION_SIZE := 268435456
+BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
+BOARD_FLASH_BLOCK_SIZE := 131072
+
+# Disable new LOGD, Not compatible with kernel
+#TARGET_USES_LOGD := false
 
 # Wifi related defines
 USES_TI_MAC80211 := true
@@ -87,11 +105,16 @@ endif
 BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true
 
 # OMX Stuff
+# BOARD_USES_TI_CAMERA_HAL := true
 HARDWARE_OMX := true
-TARGET_USE_OMX_RECOVERY := true
-TARGET_USE_OMAP_COMPAT  := true
-BUILD_WITH_TI_AUDIO := 1
-BUILD_PV_VIDEO_ENCODERS := 1
+OMX_JPEG := true
+OMX_VENDOR := ti
+OMX_VENDOR_INCLUDES := \
+   hardware/ti/omx/system/src/openmax_il/omx_core/inc \
+   hardware/ti/omx/image/src/openmax_il/jpeg_enc/inc
+OMX_VENDOR_WRAPPER := TI_OMX_Wrapper
+BOARD_OPENCORE_LIBRARIES := libOMX_Core
+BOARD_OPENCORE_FLAGS := -DHARDWARE_OMX=1
 
 # TWRP Recovery
 BOARD_HAS_NO_SELECT_BUTTON := true
@@ -116,37 +139,52 @@ TW_MAX_BRIGHTNESS := 255
 TW_NO_BATT_PERCENT := false
 TW_NO_REBOOT_RECOVERY := false
 TW_NO_REBOOT_BOOTLOADER := true
-TW_ALWAYS_RMRF := false
-BOARD_UMS_LUNFILE := /sys/class/android_usb/f_mass_storage/lun/file
+BOARD_UMS_LUNFILE := /sys/class/android_usb/f_mass_storage/lun0/file
 TW_NO_SCREEN_BLANK := true
 TW_HAS_NO_RECOVERY_PARTITION := true
 TW_HAS_NO_BOOT_PARTITION := true
 TW_NO_SCREEN_TIMEOUT := true
-
+TARGET_RECOVERY_PRE_COMMAND :=  "echo recovery > /cache/recovery/bootmode.conf; sync; \#"
+TARGET_RECOVERY_PRE_COMMAND_CLEAR_REASON := true
 TARGET_NO_SEPARATE_RECOVERY := true
+TARGET_USERIMAGES_USE_F2FS := true
+TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/devices/virtual/android_usb/android0/f_mass_storage/lun%d/file"
 TW_EXCLUDE_SUPERSU := true
 TW_EXCLUDE_ENCRYPTED_BACKUPS := true
 
-TARGET_RECOVERY_PRE_COMMAND := "echo recovery > /bootstrap/bootmode.conf;sync"
-TARGET_NO_SEPARATE_RECOVERY := true
-TARGET_RECOVERY_PRE_COMMAND_CLEAR_REASON := true
-
 # Egl Specific
 USE_OPENGL_RENDERER := true
-BOARD_USE_YUV422I_DEFAULT_COLORFORMAT := true
 ENABLE_WEBGL := true
 COMMON_GLOBAL_CFLAGS += -DSYSTEMUI_PBSIZE_HACK=1
 COMMON_GLOBAL_CFLAGS += -DWORKAROUND_BUG_10194508=1
 COMMON_GLOBAL_CFLAGS += -DHAS_CONTEXT_PRIORITY -DDONT_USE_FENCE_SYNC
 TARGET_DISABLE_TRIPLE_BUFFERING := true
-TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := true
+TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := false
 # Increase EGL cache size to 2MB
 #MAX_EGL_CACHE_SIZE := 2097152
 #MAX_EGL_CACHE_KEY_SIZE := 4096
+# OMAP3 HWC: disable use of YUV overlays
+# Prevents stuttering/compositing artifacts and sync loss during video playback
+TARGET_OMAP3_HWC_DISABLE_YUV_OVERLAY := true
 
 # Camera
 USE_CAMERA_STUB := false
 BOARD_OVERLAY_BASED_CAMERA_HAL := true
+
+# Audio
+BOARD_USES_AUDIO_LEGACY := true
+
+ifeq ($(BOARD_USES_AUDIO_LEGACY),false)
+BOARD_USES_GENERIC_AUDIO := false
+BOARD_USES_ALSA_AUDIO := true
+BUILD_WITH_ALSA_UTILS := true
+else
+COMMON_GLOBAL_CFLAGS += -DUSES_AUDIO_LEGACY
+TARGET_PROVIDES_LIBAUDIO := true
+BOARD_USE_KINETO_COMPATIBILITY := true
+BOARD_USE_HARDCODED_FAST_TRACK_LATENCY_WHEN_DENIED := 160
+endif
+HAVE_2_3_DSP := 1
 
 # Boot animation
 TARGET_BOOTANIMATION_PRELOAD := true
@@ -155,10 +193,6 @@ TARGET_BOOTANIMATION_USE_RGB565 := true
 TARGET_CONTINUOUS_SPLASH_ENABLED := false
 
 # Other..
-BOARD_USES_AUDIO_LEGACY := true
-TARGET_PROVIDES_LIBAUDIO := true
-BOARD_USE_KINETO_COMPATIBILITY := true
-BOARD_USE_HARDCODED_FAST_TRACK_LATENCY_WHEN_DENIED := 160
 BOARD_USES_LEGACY_RIL := true
 BOARD_USE_LEGACY_SENSORS_FUSION := false
 BOARD_HARDWARE_CLASS := device/moto/shadow-common/cmhw/
@@ -171,14 +205,14 @@ TARGET_PROVIDES_RELEASETOOLS := true
 TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT := build/tools/releasetools/ota_from_target_files --device_specific device/moto/shadow-common/releasetools/shadow-common_ota_from_target_files.py
 
 ext_modules:
-	make -C $(TARGET_KERNEL_MODULES_EXT) modules KERNEL_DIR=$(KERNEL_OUT) ARCH=arm CROSS_COMPILE=$(TARGET_KERNEL_MODULES_TOOLCHAIN)
+	make -C $(TARGET_KERNEL_MODULES_EXT) modules KERNEL_DIR=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE)
 	find $(TARGET_KERNEL_MODULES_EXT)/ -name "*.ko" -exec mv {} \
 		$(KERNEL_MODULES_OUT) \; || true
 
 COMPAT_MODULES:
-	make mrproper -C device/moto/shadow-common/modules/backports
-	make -C device/moto/shadow-common/modules/backports KERNEL_DIR=$(KERNEL_OUT) KLIB=$(KERNEL_OUT) KLIB_BUILD=$(KERNEL_OUT) ARCH=arm CROSS_COMPILE=$(TARGET_KERNEL_MODULES_TOOLCHAIN) defconfig-mapphone
-	make -C device/moto/shadow-common/modules/backports KERNEL_DIR=$(KERNEL_OUT) KLIB=$(KERNEL_OUT) KLIB_BUILD=$(KERNEL_OUT) ARCH=arm CROSS_COMPILE=$(TARGET_KERNEL_MODULES_TOOLCHAIN)
+	make -C device/moto/shadow-common/modules/backports KERNEL_DIR=$(KERNEL_OUT) KLIB=$(KERNEL_OUT) KLIB_BUILD=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) mrproper
+	make -C device/moto/shadow-common/modules/backports KERNEL_DIR=$(KERNEL_OUT) KLIB=$(KERNEL_OUT) KLIB_BUILD=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) defconfig-mapphone
+	make -C device/moto/shadow-common/modules/backports KERNEL_DIR=$(KERNEL_OUT) KLIB=$(KERNEL_OUT) KLIB_BUILD=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE)
 	mv device/moto/shadow-common/modules/backports/compat/compat.ko $(KERNEL_MODULES_OUT)
 ifeq ($(TARGET_USE_BLUEDROID_STACK),false)
 	mv device/moto/shadow-common/modules/backports/net/bluetooth/bluetooth.ko $(KERNEL_MODULES_OUT)
@@ -195,8 +229,8 @@ endif
 	arm-linux-androideabi-strip --strip-unneeded $(KERNEL_MODULES_OUT)/*
 
 WLAN_MODULES:
-	make clean -C hardware/ti/wlan/mac80211/compat_wl12xx
-	make -C hardware/ti/wlan/mac80211/compat_wl12xx KERNEL_DIR=$(KERNEL_OUT) KLIB=$(KERNEL_OUT) KLIB_BUILD=$(KERNEL_OUT) ARCH=arm CROSS_COMPILE=$(TARGET_KERNEL_MODULES_TOOLCHAIN)
+	make -C hardware/ti/wlan/mac80211/compat_wl12xx KERNEL_DIR=$(KERNEL_OUT) KLIB=$(KERNEL_OUT) KLIB_BUILD=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) clean
+	make -C hardware/ti/wlan/mac80211/compat_wl12xx KERNEL_DIR=$(KERNEL_OUT) KLIB=$(KERNEL_OUT) KLIB_BUILD=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE)
 	mv hardware/ti/wlan/mac80211/compat_wl12xx/compat/compat.ko $(KERNEL_MODULES_OUT)
 	mv hardware/ti/wlan/mac80211/compat_wl12xx/net/mac80211/mac80211.ko $(KERNEL_MODULES_OUT)
 	mv hardware/ti/wlan/mac80211/compat_wl12xx/net/wireless/cfg80211.ko $(KERNEL_MODULES_OUT)
@@ -205,27 +239,26 @@ WLAN_MODULES:
 	arm-linux-androideabi-strip --strip-unneeded $(KERNEL_MODULES_OUT)/*
 
 hboot:
-	mkdir -p $(PRODUCT_OUT)/system/bootstrap/2nd-boot   
-	echo "$(BOARD_KERNEL_CMDLINE)" > $(PRODUCT_OUT)/system//bootstrap/2nd-boot/cmdline  
+	mkdir -p $(PRODUCT_OUT)/system/bootstrap/2nd-boot
+	echo "$(BOARD_KERNEL_CMDLINE)" > $(PRODUCT_OUT)/system//bootstrap/2nd-boot/cmdline
 	echo "$(BOARD_RECOVERY_KERNEL_CMDLINE)" > $(PRODUCT_OUT)/system/bootstrap/2nd-boot/cmdline-recovery
-	make -C  $(ANDROID_BUILD_TOP)/device/moto/shadow-common/bootstrap/hboot ARCH=arm CROSS_COMPILE=$(TARGET_KERNEL_MODULES_TOOLCHAIN)
+	make -C  $(ANDROID_BUILD_TOP)/device/moto/shadow-common/bootstrap/hboot ARCH=$(TARGET_ARCH) CROSS_COMPILE=$(TARGET_4_4_TOOLCHAIN)
 	mv $(ANDROID_BUILD_TOP)/device/moto/shadow-common/bootstrap/hboot/hboot.bin $(PRODUCT_OUT)/system/bootstrap/2nd-boot/
-	make clean -C $(ANDROID_BUILD_TOP)/device/moto/shadow-common/bootstrap/hboot
+	make -C $(ANDROID_BUILD_TOP)/device/moto/shadow-common/bootstrap/hboot ARCH=$(TARGET_ARCH) CROSS_COMPILE=$(TARGET_4_4_TOOLCHAIN) clean
 
 # If kernel sources are present in repo, here is the location
 TARGET_KERNEL_SOURCE := $(ANDROID_BUILD_TOP)/shadow-kernel
-TARGET_KERNEL_CUSTOM_TOOLCHAIN := arm-eabi-4.4.3
-TARGET_KERNEL_MODULES_TOOLCHAIN := $(ANDROID_BUILD_TOP)/prebuilt/linux-x86/toolchain/$(TARGET_KERNEL_CUSTOM_TOOLCHAIN)/bin/arm-eabi-
 PARTITION_TABLE := blkdevparts=mmcblk1:51593216@44040192(root_system),140000@337500960(system_sign),679477248@337640961(system),51200000@1017118210(cache),6875692544@1068318211(data),4194304@3145728(pds)
 BOARD_RECOVERY_KERNEL_CMDLINE := console=/dev/null mem=500M init=/init omapfb.vram=0:4M usbcore.old_scheme_first=y cpcap_charger_enabled=y $(PARTITION_TABLE)
 BOARD_KERNEL_CMDLINE := console=/dev/null mem=500M init=/init omapfb.vram=0:4M usbcore.old_scheme_first=y cpcap_charger_enabled=n $(PARTITION_TABLE)
 
 # Extra: external modules sources
 TARGET_KERNEL_MODULES_EXT := $(ANDROID_BUILD_TOP)/device/moto/shadow-common/modules/sources/
+TARGET_4_4_TOOLCHAIN := $(ANDROID_BUILD_TOP)/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
 
 ifeq ($(TARGET_USE_KERNEL_BACKPORTS),true)
 TARGET_KERNEL_MODULES := ext_modules hboot WLAN_MODULES COMPAT_MODULES
 else
-TARGET_KERNEL_MODULES := ext_modules hboot WLAN_MODULES
+TARGET_KERNEL_MODULES := hboot WLAN_MODULES #ext_modules
 endif
 

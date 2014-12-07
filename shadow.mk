@@ -45,7 +45,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.config.low_ram=true  \
 	dalvik.vm.jit.codecachesize=0 \
 	ro.input.noresample=1 \
-#	cm.updater.uri=http://defy.cm-for.us/api \
+	ro.ksm.default=1 \
 
 # Set default USB interface
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
@@ -98,21 +98,43 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
 	com.android.future.usb.accessory
 
-# Legacy sound
+# Audio
 PRODUCT_PACKAGES += \
 	libaudioutils audio.a2dp.default audio.r_submix.default \
 	libaudiohw_legacy \
 
+PRODUCT_PACKAGES += hwcomposer.omap3
+
 # OMX stuff
-PRODUCT_PACKAGES += dspexec libbridge libLCML libOMX_Core libstagefrighthw
-PRODUCT_PACKAGES += libOMX.TI.AAC.encode libOMX.TI.AAC.decode libOMX.TI.AMR.decode libOMX.TI.AMR.encode
-PRODUCT_PACKAGES += libOMX.TI.WBAMR.encode libOMX.TI.MP3.decode libOMX.TI.WBAMR.decode
-PRODUCT_PACKAGES += libOMX.TI.Video.Decoder libOMX.TI.Video.encoder libOMX.TI.JPEG.Encoder
-PRODUCT_PACKAGES += libOMX.TI.720P.Encoder
+PRODUCT_PACKAGES += \
+    libstagefrighthw \
+    libbridge \
+    cexec.out \
+    libPERF \
+    libOMX_Core \
+    libLCML \
+    libOMX.TI.Video.Decoder \
+    libOMX.TI.Video.encoder \
+    libOMX.TI.WBAMR.decode \
+    libOMX.TI.AAC.encode \
+    libOMX.TI.MP3.decode \
+    libOMX.TI.Video.encoder \
+    libOMX.TI.WBAMR.encode \
+    libOMX.TI.AAC.decode \
+    libOMX.TI.AMR.encode \
+    libOMX.TI.JPEG.decoder \
+    libOMX.TI.JPEG.Encoder \
+    libOMX.TI.Video.Decoder \
+    libOMX.TI.AMR.decode \
+    libOMX.TI.720P.Encoder \
+    libion \
+    libaudioutils \
+    libtiutils \
+    libomap_mm_library_jni
 
 # Droid X stuff
 PRODUCT_PACKAGES += libfnc DXParts MotoFM MotoFMService HwaSettings
-PRODUCT_PACKAGES += charge_only_mode mot_boot_mode
+PRODUCT_PACKAGES += charge_only_mode mot_boot_mode mkfs.f2fs fsck.f2fs
 
 # Experimental TI OpenLink
 PRODUCT_PACKAGES += libnl_2 iw libbt-vendor uim-sysfs libbluedroid

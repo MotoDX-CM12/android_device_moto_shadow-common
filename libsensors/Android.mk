@@ -38,7 +38,7 @@ LOCAL_SRC_FILES := 					\
 				SensorAK8973.cpp	\
 				SensorKXTF9.cpp
 				
-LOCAL_SHARED_LIBRARIES := liblog libcutils
+LOCAL_SHARED_LIBRARIES := liblog
 LOCAL_PRELINK_MODULE := false
 
 include $(BUILD_SHARED_LIBRARY)
